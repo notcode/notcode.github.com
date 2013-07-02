@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Not Code]]></title>
+  <link href="http://notcode.github.io/atom.xml" rel="self"/>
+  <link href="http://notcode.github.io/"/>
+  <updated>2013-07-02T17:31:55+08:00</updated>
+  <id>http://notcode.github.io/</id>
+  <author>
+    <name><![CDATA[coder]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+</feed>
