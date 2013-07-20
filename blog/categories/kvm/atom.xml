@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Not Code]]></title>
-  <link href="http://notcode.github.io/atom.xml" rel="self"/>
+  <title><![CDATA[Category: kvm | Not Code]]></title>
+  <link href="http://notcode.github.io/blog/categories/kvm/atom.xml" rel="self"/>
   <link href="http://notcode.github.io/"/>
   <updated>2013-07-20T16:56:55+08:00</updated>
   <id>http://notcode.github.io/</id>
@@ -154,49 +154,6 @@ DELAY=0
 <p>用于克隆虚拟机镜像,克隆后的镜像可以通过vir*工具管理</p></li>
 </ol>
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[modeline: vim configuration per file]]></title>
-    <link href="http://notcode.github.io/blog/2013/07/02/modeline-vim-configuration-per-file/"/>
-    <updated>2013-07-02T22:10:00+08:00</updated>
-    <id>http://notcode.github.io/blog/2013/07/02/modeline-vim-configuration-per-file</id>
-    <content type="html"><![CDATA[<h2>简介</h2>
-
-<p>vim有一个叫做modeline的功能，它允许对单独的文件设置vim变量。当用vim打开文件时，这些变量便可生效。</p>
-
-<p>当编辑python文件时，必须保证编辑环境的缩进和文件中原有的缩进一致。有多个开发人员协作时，缩进不一致的问题经常发生。
-使用modeline可以解决这样的问题。</p>
-
-<p>具体做法如下：</p>
-
-<pre><code>#!/usr/bin/env python2.7
-# vim ts=4 sw=4 et
-</code></pre>
-
-<h2>语法</h2>
-
-<p>modeline的语法如下：</p>
-
-<pre><code>[text]{white}{vi:|vim:|ex:}[white]{options}
-</code></pre>
-
-<ul>
-<li>[text]            any text or empty</li>
-<li>{white}           at least one blank character (<Space> or <Tab>)</li>
-<li>{vi:|vim:|ex:}    the string &ldquo;vi:&rdquo;, &ldquo;vim:&rdquo; or &ldquo;ex:&rdquo;</li>
-<li>[white]           optional white space</li>
-<li>{options}         a list of option settings, separated with white space or &lsquo;:&rsquo;, where each part between &lsquo;:&rsquo; is the argument for a &ldquo;:set&rdquo; command (can be empty)</li>
-</ul>
-
-
-<h2>使用范围</h2>
-
-<p>modeline只在文件开头，或者末尾的N行有效，N默认为5，可以通过查看modelines变量得到</p>
-
-<pre><code>:set modelines?
-</code></pre>
 ]]></content>
   </entry>
   
