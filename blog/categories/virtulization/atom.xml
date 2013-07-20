@@ -4,7 +4,7 @@
   <title><![CDATA[Category: virtulization | Not Code]]></title>
   <link href="http://notcode.github.io/blog/categories/virtulization/atom.xml" rel="self"/>
   <link href="http://notcode.github.io/"/>
-  <updated>2013-07-20T16:56:55+08:00</updated>
+  <updated>2013-07-20T16:58:19+08:00</updated>
   <id>http://notcode.github.io/</id>
   <author>
     <name><![CDATA[coder]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[在CentOS 5.3 中搭建kvm虚拟机环境]]></title>
+    <title type="html"><![CDATA[在CentOS 5.3 中搭建kvm虚拟机]]></title>
     <link href="http://notcode.github.io/blog/2013/07/20/setup-kvm-environment-on-centos-5-dot-3/"/>
     <updated>2013-07-20T15:41:00+08:00</updated>
     <id>http://notcode.github.io/blog/2013/07/20/setup-kvm-environment-on-centos-5-dot-3</id>
