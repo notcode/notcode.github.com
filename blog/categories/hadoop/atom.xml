@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: hadoop | Not Code]]></title>
+  <link href="http://notcode.github.io/blog/categories/hadoop/atom.xml" rel="self"/>
+  <link href="http://notcode.github.io/"/>
+  <updated>2013-09-07T20:11:42+08:00</updated>
+  <id>http://notcode.github.io/</id>
+  <author>
+    <name><![CDATA[coder]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Replica strategy in hdfs is not good enough]]></title>
+    <link href="http://notcode.github.io/blog/2013/09/07/replica-strategy-in-hdfs-is-not-good/"/>
+    <updated>2013-09-07T19:02:00+08:00</updated>
+    <id>http://notcode.github.io/blog/2013/09/07/replica-strategy-in-hdfs-is-not-good</id>
+    <content type="html"><![CDATA[<h5>Two methods of Replica</h5>
+
+<p>I&rsquo;ve known two methods of replica in distributed storage system.
+One is like hadoop, which distributes the three replicas of a block on three different nodes.
+The other is like mongodb, which store data into shardings with three nodes in each sharding.These three nodes in the same sharding are identical.</p>
+
+<p>Both of the two strategy has a &ldquo;at most two dead node&rdquo; tolerance,that meanings if one or two node in cluster crash,all the data is still available. But what happen to three nodes?</p>
+
+<!-- more -->
+
+
+<h5>Think it for a while</h5>
+
+<p>Suppose there are N nodes and B blocks in cluster. What&rsquo;s the probability of availability with three nodes lost?</p>
+
+<ul>
+<li>probability in hadoop cluster</li>
+</ul>
+
+
+<p>For one block,the probability that not all three replicas of this block is on the three dead nodes is:</p>
+
+<pre><code>1-6/[n(n-1)(n-2)]
+</code></pre>
+
+<p>The cluster is available with three node lost means all block is available,and the probability is :</p>
+
+<pre><code>(1-6/[n(n-1)(n-2)])^b
+</code></pre>
+
+<ul>
+<li>probability in mongodb cluster</li>
+</ul>
+
+
+<p>The nodes number is N, shardings number should be N/3. The probability that cluster is not available is 1/[(N/3)(N/3)],
+and the opposite is :</p>
+
+<pre><code>1-1/[(N/3)(N/3)]
+</code></pre>
+
+<h5>Which is better</h5>
+
+<p>  If N=20,B=10k,which is better?
+  Actually when there are 20 nodes in a cluster,the number of blocks is far greater than 10K.</p>
+
+<ul>
+<li>probability in hadoop is: 0.0154%</li>
+<li>probability in mongo is: 99.7%</li>
+</ul>
+
+
+<p>See,the tolerance in hadoop is not good enough.</p>
+]]></content>
+  </entry>
+  
+</feed>

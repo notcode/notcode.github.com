@@ -5,11 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Category: mongodb - Not Code</title>
+  <title>Replica strategy in hdfs is not good enough - Not Code</title>
   <meta name="author" content="coder">
 
   
-  <meta name="description" content="Category: mongodb">
+  <meta name="description" content="Two methods of Replica I&rsquo;ve known two methods of replica in distributed storage system.
+One is like hadoop, which distributes the three &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +19,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://notcode.github.ioblog/categories/mongodb">
+  <link rel="canonical" href="http://notcode.github.io/blog/2013/09/07/replica-strategy-in-hdfs-is-not-good">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Not Code" type="application/atom+xml">
@@ -62,36 +63,145 @@
   <div id="main">
     <div id="content">
       <div>
-<article role="article">
+<article class="hentry" role="article">
   
   <header>
-    <h1 class="entry-title">Category: Mongodb</h1>
+    
+      <h1 class="entry-title">Replica Strategy in Hdfs Is Not Good Enough</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-07T19:02:00+08:00" pubdate data-updated="true">09/07/2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
     
   </header>
-  
-  <div id="blog-archives" class="category">
 
 
+<div class="entry-content"><h5>Two methods of Replica</h5>
 
-  
-  <h2>2013</h2>
+<p>I&rsquo;ve known two methods of replica in distributed storage system.
+One is like hadoop, which distributes the three replicas of a block on three different nodes.
+The other is like mongodb, which store data into shardings with three nodes in each sharding.These three nodes in the same sharding are identical.</p>
 
-<article>
-  
-<h1><a href="/blog/2013/08/08/mongodb-performance-tuning/">mongodb performance tuning</a></h1>
-<time datetime="2013-08-08T09:47:00+08:00" pubdate><span class='month'>Aug</span> <span class='day'>08</span> <span class='year'>2013</span></time>
+<p>Both of the two strategy has a &ldquo;at most two dead node&rdquo; tolerance,that meanings if one or two node in cluster crash,all the data is still available. But what happen to three nodes?</p>
 
-<footer>
-  <span class="categories">posted in <a class='category' href='/blog/categories/mongodb/'>mongodb</a></span>
-</footer>
+<!-- more -->
 
 
-</article>
+<h5>Think it for a while</h5>
 
+<p>Suppose there are N nodes and B blocks in cluster. What&rsquo;s the probability of availability with three nodes lost?</p>
+
+<ul>
+<li>probability in hadoop cluster</li>
+</ul>
+
+
+<p>For one block,the probability that not all three replicas of this block is on the three dead nodes is:</p>
+
+<pre><code>1-6/[n(n-1)(n-2)]
+</code></pre>
+
+<p>The cluster is available with three node lost means all block is available,and the probability is :</p>
+
+<pre><code>(1-6/[n(n-1)(n-2)])^b
+</code></pre>
+
+<ul>
+<li>probability in mongodb cluster</li>
+</ul>
+
+
+<p>The nodes number is N, shardings number should be N/3. The probability that cluster is not available is 1/[(N/3)(N/3)],
+and the opposite is :</p>
+
+<pre><code>1-1/[(N/3)(N/3)]
+</code></pre>
+
+<h5>Which is better</h5>
+
+<p>  If N=20,B=10k,which is better?
+  Actually when there are 20 nodes in a cluster,the number of blocks is far greater than 10K.</p>
+
+<ul>
+<li>probability in hadoop is: 0.0154%</li>
+<li>probability in mongo is: 99.7%</li>
+</ul>
+
+
+<p>See,the tolerance in hadoop is not good enough.</p>
 </div>
 
+
+  <footer>
+    <p class="meta">
+      
   
+
+<span class="byline author vcard">Posted by <span class="fn">coder</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-07T19:02:00+08:00" pubdate data-updated="true">09/07/2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/hadoop/'>hadoop</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://notcode.github.io/blog/2013/09/07/replica-strategy-in-hdfs-is-not-good/" data-via="" data-counturl="http://notcode.github.io/blog/2013/09/07/replica-strategy-in-hdfs-is-not-good/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/08/08/mongodb-performance-tuning/" title="Previous Post: mongodb performance tuning">&laquo; mongodb performance tuning</a>
+      
+      
+    </p>
+  </footer>
 </article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
 
 </div>
 
@@ -142,7 +252,10 @@
       var disqus_shortname = 'garfee';
       
         
-        var disqus_script = 'count.js';
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://notcode.github.io/blog/2013/09/07/replica-strategy-in-hdfs-is-not-good/';
+        var disqus_url = 'http://notcode.github.io/blog/2013/09/07/replica-strategy-in-hdfs-is-not-good/';
+        var disqus_script = 'embed.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;

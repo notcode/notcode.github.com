@@ -9,8 +9,8 @@
   <meta name="author" content="coder">
 
   
-  <meta name="description" content="1.背景 mongodb的写性能很一般,即使采用bulk insert，也达不到我们的业务需求。
-另外，mongodb有一个DB粒度的读写锁,因此采用并发写也无法提高写性能。因为读写锁的关系，在有写负载较高的情况下,读性能也被拉低了。 引自mongodb官网: Beginning with &hellip;">
+  <meta name="description" content="Two methods of Replica I&rsquo;ve known two methods of replica in distributed storage system.
+One is like hadoop, which distributes the three &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +64,55 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/09/07/replica-strategy-in-hdfs-is-not-good/">Replica Strategy in Hdfs Is Not Good Enough</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-07T19:02:00+08:00" pubdate data-updated="true">09/07/2013</time>
+        
+         | <a href="/blog/2013/09/07/replica-strategy-in-hdfs-is-not-good/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h5>Two methods of Replica</h5>
+
+<p>I&rsquo;ve known two methods of replica in distributed storage system.
+One is like hadoop, which distributes the three replicas of a block on three different nodes.
+The other is like mongodb, which store data into shardings with three nodes in each sharding.These three nodes in the same sharding are identical.</p>
+
+<p>Both of the two strategy has a &ldquo;at most two dead node&rdquo; tolerance,that meanings if one or two node in cluster crash,all the data is still available. But what happen to three nodes?</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/09/07/replica-strategy-in-hdfs-is-not-good/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -233,6 +282,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/09/07/replica-strategy-in-hdfs-is-not-good/">Replica Strategy in Hdfs Is Not Good Enough</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2013/08/08/mongodb-performance-tuning/">Mongodb Performance Tuning</a>
