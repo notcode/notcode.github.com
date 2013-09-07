@@ -17,7 +17,9 @@ vim有一个叫做modeline的功能，它允许对单独的文件设置vim变量
 
 具体做法如下：
     #!/usr/bin/env python2.7
-    # vim ts=4 sw=4 et
+    # vim: ts=4 sw=4 et
+
+<!-- more -->
 
 语法
 ---

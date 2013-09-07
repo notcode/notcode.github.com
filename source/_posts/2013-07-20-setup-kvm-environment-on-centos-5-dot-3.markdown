@@ -18,6 +18,8 @@ categories:
 
     如果有输出，表示cpu可以支持。intel的cpu会输出vmx，amd的cpu输出svm.
 
+<!-- more -->
+
 2.  设置BIOS，开启虚拟化。
 
     平时修改BIOS的操作很容易，重启进BIOS即可。但由于现在是远程登录到server上,需要远程修改BIOS,可以按照如下操作进行.
