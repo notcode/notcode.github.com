@@ -4,7 +4,7 @@
   <title><![CDATA[Not Code]]></title>
   <link href="http://notcode.github.io/atom.xml" rel="self"/>
   <link href="http://notcode.github.io/"/>
-  <updated>2013-07-20T16:58:19+08:00</updated>
+  <updated>2013-09-07T17:21:00+08:00</updated>
   <id>http://notcode.github.io/</id>
   <author>
     <name><![CDATA[coder]]></name>
@@ -12,6 +12,101 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[mongodb performance tuning]]></title>
+    <link href="http://notcode.github.io/blog/2013/08/08/mongodb-performance-tuning/"/>
+    <updated>2013-08-08T09:47:00+08:00</updated>
+    <id>http://notcode.github.io/blog/2013/08/08/mongodb-performance-tuning</id>
+    <content type="html"><![CDATA[<h4>1.背景</h4>
+
+<p>mongodb的写性能很一般,即使采用bulk insert，也达不到我们的业务需求。
+另外，mongodb有一个DB粒度的读写锁,因此采用并发写也无法提高写性能。因为读写锁的关系，在有写负载较高的情况下,读性能也被拉低了。</p>
+
+<p>引自mongodb官网:</p>
+
+<blockquote><p>Beginning with version 2.2, MongoDB implements locks on a per-database basis for most read and write operations.</p></blockquote>
+
+<!-- more -->
+
+
+<h4>2.如何优化</h4>
+
+<p>折腾了两天，最终的优化方案如下：</p>
+
+<ul>
+<li>使用replica set，读写分离</li>
+</ul>
+
+
+<p> replica set可以避免读写竞争，保证mongodb正常的读写性能。而且为了HA，replica set是必须要做的，所以没有测试replica set对性能影响。</p>
+
+<ul>
+<li>对collection做shard，提高写性能</li>
+</ul>
+
+
+<p>做shard能近似线性的提高写速度，在做线性扩展时，可以通过增加shard来达到预期。
+但要如果想将写速度提高1~2个数量级，shard数量要x10或x100，代价太高。</p>
+
+<ul>
+<li>合并document,减少insert次数</li>
+</ul>
+
+
+<p>终极大招还是这条策略。将原来的document10个一组,合并成一个document，insert的次数降了一个数量级，写速度便不再是问题。</p>
+
+<h4>3.shard benchmark</h4>
+
+<p>对shard做了比较简单的测试，只是验证一下shard的效果。结果如下：</p>
+
+<p>写进程并发数:8</p>
+
+<ul>
+<li><p>没有shard,7000 inserts/sec</p></li>
+<li><p>2个shard,12000 inserts/sec</p></li>
+<li><p>4个shard,16000 inserts/sec</p></li>
+</ul>
+
+
+<p>测试过程中，mongodb的写速度不是很稳定。</p>
+
+<p><em>测试代码:</em></p>
+
+<pre><code>var mongo=require('mongodb');
+var util=require('util');
+var fs=require('fs');
+var STEP=require('./step');
+
+var collection;
+function loop(){
+    var d=new Date();
+    var s=100000;
+    STEP(   
+        function(){
+            var group=this.group();
+            for(var i=0;i&lt;s;i++){
+                collection.insert({k:i},group());
+            }
+        },
+        function(err,res){
+            if(err){throw err;}
+            console.log('TPS:\t'+s*1000.0/(new Date()-d))
+            setTimeout(loop,10);
+        }
+    );  
+}   
+mongo.connect('mongodb://mongo.test.clouds.com:27017/x?w=1',function(err,db){
+    if(err){throw err;}
+    db.collection('a',function(err,c){
+        if(err){throw err;}
+        collection=c;
+        loop();
+    });
+});
+</code></pre>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[在CentOS 5.3 中搭建kvm虚拟机]]></title>
@@ -27,6 +122,13 @@
 </code></pre>
 
 <p>如果有输出，表示cpu可以支持。intel的cpu会输出vmx，amd的cpu输出svm.</p></li>
+</ol>
+
+
+<!-- more -->
+
+
+<ol>
 <li><p>设置BIOS，开启虚拟化。</p>
 
 <p>平时修改BIOS的操作很容易，重启进BIOS即可。但由于现在是远程登录到server上,需要远程修改BIOS,可以按照如下操作进行.</p>
@@ -172,8 +274,11 @@ DELAY=0
 <p>具体做法如下：</p>
 
 <pre><code>#!/usr/bin/env python2.7
-# vim ts=4 sw=4 et
+# vim: ts=4 sw=4 et
 </code></pre>
+
+<!-- more -->
+
 
 <h2>语法</h2>
 

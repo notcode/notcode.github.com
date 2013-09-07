@@ -4,7 +4,7 @@
   <title><![CDATA[Category: vim | Not Code]]></title>
   <link href="http://notcode.github.io/blog/categories/vim/atom.xml" rel="self"/>
   <link href="http://notcode.github.io/"/>
-  <updated>2013-07-20T16:58:19+08:00</updated>
+  <updated>2013-09-07T17:21:00+08:00</updated>
   <id>http://notcode.github.io/</id>
   <author>
     <name><![CDATA[coder]]></name>
@@ -28,8 +28,11 @@
 <p>具体做法如下：</p>
 
 <pre><code>#!/usr/bin/env python2.7
-# vim ts=4 sw=4 et
+# vim: ts=4 sw=4 et
 </code></pre>
+
+<!-- more -->
+
 
 <h2>语法</h2>
 

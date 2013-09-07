@@ -4,7 +4,7 @@
   <title><![CDATA[Category: cloud | Not Code]]></title>
   <link href="http://notcode.github.io/blog/categories/cloud/atom.xml" rel="self"/>
   <link href="http://notcode.github.io/"/>
-  <updated>2013-07-20T16:58:19+08:00</updated>
+  <updated>2013-09-07T17:21:00+08:00</updated>
   <id>http://notcode.github.io/</id>
   <author>
     <name><![CDATA[coder]]></name>
@@ -27,6 +27,13 @@
 </code></pre>
 
 <p>如果有输出，表示cpu可以支持。intel的cpu会输出vmx，amd的cpu输出svm.</p></li>
+</ol>
+
+
+<!-- more -->
+
+
+<ol>
 <li><p>设置BIOS，开启虚拟化。</p>
 
 <p>平时修改BIOS的操作很容易，重启进BIOS即可。但由于现在是远程登录到server上,需要远程修改BIOS,可以按照如下操作进行.</p>

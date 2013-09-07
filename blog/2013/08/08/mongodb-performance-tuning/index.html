@@ -5,12 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>modeline: vim configuration per file - Not Code</title>
+  <title>mongodb performance tuning - Not Code</title>
   <meta name="author" content="coder">
 
   
-  <meta name="description" content="简介 vim有一个叫做modeline的功能，它允许对单独的文件设置vim变量。当用vim打开文件时，这些变量便可生效。 当编辑python文件时，必须保证编辑环境的缩进和文件中原有的缩进一致。有多个开发人员协作时，缩进不一致的问题经常发生。
-使用modeline可以解决这样的问题。 具体做法如下 &hellip;">
+  <meta name="description" content="1.背景 mongodb的写性能很一般,即使采用bulk insert，也达不到我们的业务需求。
+另外，mongodb有一个DB粒度的读写锁,因此采用并发写也无法提高写性能。因为读写锁的关系，在有写负载较高的情况下,读性能也被拉低了。 引自mongodb官网: Beginning with &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,7 +19,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://notcode.github.io/blog/2013/07/02/modeline-vim-configuration-per-file">
+  <link rel="canonical" href="http://notcode.github.io/blog/2013/08/08/mongodb-performance-tuning">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Not Code" type="application/atom+xml">
@@ -67,7 +67,7 @@
   
   <header>
     
-      <h1 class="entry-title">Modeline: Vim Configuration Per File</h1>
+      <h1 class="entry-title">Mongodb Performance Tuning</h1>
     
     
       <p class="meta">
@@ -83,7 +83,7 @@
   
 
 
-<time datetime="2013-07-02T22:10:00+08:00" pubdate data-updated="true">07/02/2013</time>
+<time datetime="2013-08-08T09:47:00+08:00" pubdate data-updated="true">08/08/2013</time>
         
          | <a href="#disqus_thread">Comments</a>
         
@@ -92,43 +92,92 @@
   </header>
 
 
-<div class="entry-content"><h2>简介</h2>
+<div class="entry-content"><h4>1.背景</h4>
 
-<p>vim有一个叫做modeline的功能，它允许对单独的文件设置vim变量。当用vim打开文件时，这些变量便可生效。</p>
+<p>mongodb的写性能很一般,即使采用bulk insert，也达不到我们的业务需求。
+另外，mongodb有一个DB粒度的读写锁,因此采用并发写也无法提高写性能。因为读写锁的关系，在有写负载较高的情况下,读性能也被拉低了。</p>
 
-<p>当编辑python文件时，必须保证编辑环境的缩进和文件中原有的缩进一致。有多个开发人员协作时，缩进不一致的问题经常发生。
-使用modeline可以解决这样的问题。</p>
+<p>引自mongodb官网:</p>
 
-<p>具体做法如下：</p>
-
-<pre><code>#!/usr/bin/env python2.7
-# vim: ts=4 sw=4 et
-</code></pre>
+<blockquote><p>Beginning with version 2.2, MongoDB implements locks on a per-database basis for most read and write operations.</p></blockquote>
 
 <!-- more -->
 
 
-<h2>语法</h2>
+<h4>2.如何优化</h4>
 
-<p>modeline的语法如下：</p>
-
-<pre><code>[text]{white}{vi:|vim:|ex:}[white]{options}
-</code></pre>
+<p>折腾了两天，最终的优化方案如下：</p>
 
 <ul>
-<li>[text]            any text or empty</li>
-<li>{white}           at least one blank character (<Space> or <Tab>)</li>
-<li>{vi:|vim:|ex:}    the string &ldquo;vi:&rdquo;, &ldquo;vim:&rdquo; or &ldquo;ex:&rdquo;</li>
-<li>[white]           optional white space</li>
-<li>{options}         a list of option settings, separated with white space or &lsquo;:&rsquo;, where each part between &lsquo;:&rsquo; is the argument for a &ldquo;:set&rdquo; command (can be empty)</li>
+<li>使用replica set，读写分离</li>
 </ul>
 
 
-<h2>使用范围</h2>
+<p> replica set可以避免读写竞争，保证mongodb正常的读写性能。而且为了HA，replica set是必须要做的，所以没有测试replica set对性能影响。</p>
 
-<p>modeline只在文件开头，或者末尾的N行有效，N默认为5，可以通过查看modelines变量得到</p>
+<ul>
+<li>对collection做shard，提高写性能</li>
+</ul>
 
-<pre><code>:set modelines?
+
+<p>做shard能近似线性的提高写速度，在做线性扩展时，可以通过增加shard来达到预期。
+但要如果想将写速度提高1~2个数量级，shard数量要x10或x100，代价太高。</p>
+
+<ul>
+<li>合并document,减少insert次数</li>
+</ul>
+
+
+<p>终极大招还是这条策略。将原来的document10个一组,合并成一个document，insert的次数降了一个数量级，写速度便不再是问题。</p>
+
+<h4>3.shard benchmark</h4>
+
+<p>对shard做了比较简单的测试，只是验证一下shard的效果。结果如下：</p>
+
+<p>写进程并发数:8</p>
+
+<ul>
+<li><p>没有shard,7000 inserts/sec</p></li>
+<li><p>2个shard,12000 inserts/sec</p></li>
+<li><p>4个shard,16000 inserts/sec</p></li>
+</ul>
+
+
+<p>测试过程中，mongodb的写速度不是很稳定。</p>
+
+<p><em>测试代码:</em></p>
+
+<pre><code>var mongo=require('mongodb');
+var util=require('util');
+var fs=require('fs');
+var STEP=require('./step');
+
+var collection;
+function loop(){
+    var d=new Date();
+    var s=100000;
+    STEP(   
+        function(){
+            var group=this.group();
+            for(var i=0;i&lt;s;i++){
+                collection.insert({k:i},group());
+            }
+        },
+        function(err,res){
+            if(err){throw err;}
+            console.log('TPS:\t'+s*1000.0/(new Date()-d))
+            setTimeout(loop,10);
+        }
+    );  
+}   
+mongo.connect('mongodb://mongo.test.clouds.com:27017/x?w=1',function(err,db){
+    if(err){throw err;}
+    db.collection('a',function(err,c){
+        if(err){throw err;}
+        collection=c;
+        loop();
+    });
+});
 </code></pre>
 </div>
 
@@ -152,12 +201,12 @@
   
 
 
-<time datetime="2013-07-02T22:10:00+08:00" pubdate data-updated="true">07/02/2013</time>
+<time datetime="2013-08-08T09:47:00+08:00" pubdate data-updated="true">08/08/2013</time>
       
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/vim/'>vim</a>
+    <a class='category' href='/blog/categories/mongodb/'>mongodb</a>
   
 </span>
 
@@ -166,7 +215,7 @@
     
       <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://notcode.github.io/blog/2013/07/02/modeline-vim-configuration-per-file/" data-via="" data-counturl="http://notcode.github.io/blog/2013/07/02/modeline-vim-configuration-per-file/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://notcode.github.io/blog/2013/08/08/mongodb-performance-tuning/" data-via="" data-counturl="http://notcode.github.io/blog/2013/08/08/mongodb-performance-tuning/" >Tweet</a>
   
   
   
@@ -175,8 +224,8 @@
     
     <p class="meta">
       
+        <a class="basic-alignment left" href="/blog/2013/07/20/setup-kvm-environment-on-centos-5-dot-3/" title="Previous Post: 在CentOS 5.3 中搭建kvm虚拟机">&laquo; 在CentOS 5.3 中搭建kvm虚拟机</a>
       
-        <a class="basic-alignment right" href="/blog/2013/07/20/setup-kvm-environment-on-centos-5-dot-3/" title="Next Post: 在CentOS 5.3 中搭建kvm虚拟机">在CentOS 5.3 中搭建kvm虚拟机 &raquo;</a>
       
     </p>
   </footer>
@@ -234,8 +283,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://notcode.github.io/blog/2013/07/02/modeline-vim-configuration-per-file/';
-        var disqus_url = 'http://notcode.github.io/blog/2013/07/02/modeline-vim-configuration-per-file/';
+        var disqus_identifier = 'http://notcode.github.io/blog/2013/08/08/mongodb-performance-tuning/';
+        var disqus_url = 'http://notcode.github.io/blog/2013/08/08/mongodb-performance-tuning/';
         var disqus_script = 'embed.js';
       
     (function () {

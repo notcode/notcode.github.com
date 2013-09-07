@@ -9,8 +9,7 @@
   <meta name="author" content="coder">
 
   
-  <meta name="description" content="0.准备环境 确认cpu是否支持硬件虚拟化 grep -o 'vmx\|svm' /proc/cpuinfo 如果有输出，表示cpu可以支持。intel的cpu会输出vmx，amd的cpu输出svm.
-设置BIOS，开启虚拟化。 平时修改BIOS的操作很容易，重启进BIOS即可。 &hellip;">
+  <meta name="description" content="0.准备环境 确认cpu是否支持硬件虚拟化 grep -o 'vmx\|svm' /proc/cpuinfo 如果有输出，表示cpu可以支持。intel的cpu会输出vmx，amd的cpu输出svm. 设置BIOS，开启虚拟化。 平时修改BIOS的操作很容易，重启进BIOS即可。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -101,6 +100,13 @@
 </code></pre>
 
 <p>如果有输出，表示cpu可以支持。intel的cpu会输出vmx，amd的cpu输出svm.</p></li>
+</ol>
+
+
+<!-- more -->
+
+
+<ol>
 <li><p>设置BIOS，开启虚拟化。</p>
 
 <p>平时修改BIOS的操作很容易，重启进BIOS即可。但由于现在是远程登录到server上,需要远程修改BIOS,可以按照如下操作进行.</p>
@@ -276,6 +282,8 @@ DELAY=0
         <a class="basic-alignment left" href="/blog/2013/07/02/modeline-vim-configuration-per-file/" title="Previous Post: modeline: vim configuration per file">&laquo; modeline: vim configuration per file</a>
       
       
+        <a class="basic-alignment right" href="/blog/2013/08/08/mongodb-performance-tuning/" title="Next Post: mongodb performance tuning">mongodb performance tuning &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -293,6 +301,10 @@ DELAY=0
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/08/08/mongodb-performance-tuning/">Mongodb Performance Tuning</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2013/07/20/setup-kvm-environment-on-centos-5-dot-3/">在CentOS 5.3 中搭建kvm虚拟机</a>
