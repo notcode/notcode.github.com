@@ -4,7 +4,7 @@
   <title><![CDATA[Category: hadoop | Not Code]]></title>
   <link href="http://notcode.github.io/blog/categories/hadoop/atom.xml" rel="self"/>
   <link href="http://notcode.github.io/"/>
-  <updated>2013-09-07T20:11:42+08:00</updated>
+  <updated>2013-09-07T20:37:07+08:00</updated>
   <id>http://notcode.github.io/</id>
   <author>
     <name><![CDATA[coder]]></name>
@@ -18,7 +18,7 @@
     <link href="http://notcode.github.io/blog/2013/09/07/replica-strategy-in-hdfs-is-not-good/"/>
     <updated>2013-09-07T19:02:00+08:00</updated>
     <id>http://notcode.github.io/blog/2013/09/07/replica-strategy-in-hdfs-is-not-good</id>
-    <content type="html"><![CDATA[<h5>Two methods of Replica</h5>
+    <content type="html"><![CDATA[<h3>Two methods of Replica</h3>
 
 <p>I&rsquo;ve known two methods of replica in distributed storage system.
 One is like hadoop, which distributes the three replicas of a block on three different nodes.
@@ -29,7 +29,7 @@ The other is like mongodb, which store data into shardings with three nodes in e
 <!-- more -->
 
 
-<h5>Think it for a while</h5>
+<h3>Think it for a while</h3>
 
 <p>Suppose there are N nodes and B blocks in cluster. What&rsquo;s the probability of availability with three nodes lost?</p>
 
@@ -59,10 +59,9 @@ and the opposite is :</p>
 <pre><code>1-1/[(N/3)(N/3)]
 </code></pre>
 
-<h5>Which is better</h5>
+<h3>Which is better</h3>
 
-<p>  If N=20,B=10k,which is better?
-  Actually when there are 20 nodes in a cluster,the number of blocks is far greater than 10K.</p>
+<p>  If N=20,B=10k,which is better?</p>
 
 <ul>
 <li>probability in hadoop is: 0.0154%</li>
@@ -71,6 +70,8 @@ and the opposite is :</p>
 
 
 <p>See,the tolerance in hadoop is not good enough.</p>
+
+<p>PS: Actually when there are 20 nodes in a cluster,the number of blocks is far greater than 10K.</p>
 ]]></content>
   </entry>
   
