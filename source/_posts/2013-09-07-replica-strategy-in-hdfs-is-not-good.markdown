@@ -8,7 +8,7 @@ categories:
 ---
 
 
-##### Two methods of Replica
+### Two methods of Replica
 
 I've known two methods of replica in distributed storage system.
 One is like hadoop, which distributes the three replicas of a block on three different nodes.
@@ -19,7 +19,7 @@ Both of the two strategy has a "at most two dead node" tolerance,that meanings i
 <!-- more -->
 
 
-##### Think it for a while
+### Think it for a while
 
 Suppose there are N nodes and B blocks in cluster. What's the probability of availability with three nodes lost?
 
@@ -40,12 +40,13 @@ and the opposite is :
 
 
 
-##### Which is better
+### Which is better
 
   If N=20,B=10k,which is better?
-  Actually when there are 20 nodes in a cluster,the number of blocks is far greater than 10K.
 
 * probability in hadoop is: 0.0154%
 * probability in mongo is: 99.7%
 
 See,the tolerance in hadoop is not good enough.
+
+PS: Actually when there are 20 nodes in a cluster,the number of blocks is far greater than 10K.
