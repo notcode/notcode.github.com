@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: chaos | Not Code]]></title>
+  <link href="http://notcode.github.io/blog/categories/chaos/atom.xml" rel="self"/>
+  <link href="http://notcode.github.io/"/>
+  <updated>2013-10-13T21:29:17+08:00</updated>
+  <id>http://notcode.github.io/</id>
+  <author>
+    <name><![CDATA[coder]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[refactor database design]]></title>
+    <link href="http://notcode.github.io/blog/2013/10/13/refactor-datebase-design/"/>
+    <updated>2013-10-13T19:40:00+08:00</updated>
+    <id>http://notcode.github.io/blog/2013/10/13/refactor-datebase-design</id>
+    <content type="html"><![CDATA[<h4>原来的设计</h4>
+
+<p>最近被临时调入一个项目，任务是重写后台计算程序, 所以要保持现有的接口和数据库设计。
+原有的数据库被设计成每个task一张表，表名为<code>&lt;prefix&gt;_&lt;taskid&gt;</code>，简单说明一下:</p>
+
+<blockquote><ul>
+<li>prefix 用于区别报表类型，每个task有10多种报表类型</li>
+<li>taskid 整数，用于标识task
+每个task有一个开始日期和结束日期，在这个日期区间内，每天计算一次该task的报表。
+每个table都有date列, 表明该行记录是哪一天的计算结果</li>
+</ul>
+</blockquote>
+
+<!-- more -->
+
+
+<h4>新的设计</h4>
+
+<p>后台重构后，需要将修改数据库结构，表名为<code>&lt;prefix&gt;_&lt;date&gt;</code>，表内有个taskid指明该条记录属于哪个task.
+而为了不影响前端访问数据库展示报表，希望不要修改表结构。</p>
+
+<h4>解决方案</h4>
+
+<ul>
+<li>预先创建一组名为<code>&lt;prefix&gt;</code>的表,每天的<code>&lt;prefix&gt;_&lt;date&gt;</code>继承自<code>&lt;prefix&gt;</code>.</li>
+<li>为了不影响前端，每个task创建一个view:
+
+<blockquote><p>create view &lt;prefix&gt;&lt;taskid&gt; as select * from &lt;prefix&gt; where taskid=&lt;taskid&gt;</p></blockquote></li>
+</ul>
+
+
+<p>前端都没有察觉到后台数据库结构变了，后台程序有可以按照希望的方式建表。</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -5,11 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Category: kvm - Not Code</title>
+  <title>Be careful with mapreduce while writing into database - Not Code</title>
   <meta name="author" content="coder">
 
   
-  <meta name="description" content="Category: kvm">
+  <meta name="description" content="A Strange Case Recently we come across a problem when writing into database in mapreduce jobs.
+The job gets lots of failure attempt, though succeeds &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +19,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://notcode.github.ioblog/categories/kvm">
+  <link rel="canonical" href="http://notcode.github.io/blog/2013/10/13/write-into-database-in-mapreduce-job">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Not Code" type="application/atom+xml">
@@ -62,36 +63,128 @@
   <div id="main">
     <div id="content">
       <div>
-<article role="article">
+<article class="hentry" role="article">
   
   <header>
-    <h1 class="entry-title">Category: Kvm</h1>
+    
+      <h1 class="entry-title">Be Careful With Mapreduce While Writing Into Database</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-13T10:04:00+08:00" pubdate data-updated="true">10/13/2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
     
   </header>
-  
-  <div id="blog-archives" class="category">
 
 
+<div class="entry-content"><h3>A Strange Case</h3>
 
-  
-  <h2>2013</h2>
+<p>Recently we come across a problem when writing into database in mapreduce jobs.
+The job gets lots of failure attempt, though succeeds finally.
+We reviewed the source code of job, nothing seemed suspicious, there must be something wrong in our cluster.</p>
 
-<article>
-  
-<h1><a href="/blog/2013/07/20/setup-kvm-environment-on-centos-5-dot-3/">在CentOS 5.3 中搭建kvm虚拟机</a></h1>
-<time datetime="2013-07-20T15:41:00+08:00" pubdate><span class='month'>Jul</span> <span class='day'>20</span> <span class='year'>2013</span></time>
+<p>So we reproduce the scenario.</p>
 
-<footer>
-  <span class="categories">posted in <a class='category' href='/blog/categories/cloud/'>cloud</a>, <a class='category' href='/blog/categories/kvm/'>kvm</a>, <a class='category' href='/blog/categories/virtulization/'>virtulization</a></span>
-</footer>
+<!-- more -->
 
 
-</article>
+<h3>Crime scene investigate</h3>
 
+<h5>Let&rsquo;s check the log at first.</h5>
+
+<p>From the web console of jobtracker, we find some error logs emitted by the failure attempts.
+The logs tell that inserting operation can&rsquo;t be commited because there is already a row in the table, with same primary key.</p>
+
+<h5>What about the job side?</h5>
+
+<p>The job writing into database is a map-only job, and the written table has a primary key on multiple columns.
+The input data is guaranted unique on the primary key, so there should be no conflits while executing sql like <code>'insert into ...'</code></p>
+
+<p>We notice that all of the failure attempts&rsquo;s id is greater than 0, that remind me a feature called peculative task in hadoop.
+The insert confliction is caused by this feature.</p>
+
+<p>Bingo! We find the killer!</p>
+
+<h3>Close the case</h3>
+
+<p>After close speculative task by <code>job.setMapSpeculativeExecution(false)</code>, the job succeeds silently.</p>
+
+<p>How lucky that the table is created with a primary key!
+Otherwise, we will get multiple occurence of the same record silently.</p>
 </div>
 
+
+  <footer>
+    <p class="meta">
+      
   
+
+<span class="byline author vcard">Posted by <span class="fn">coder</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-13T10:04:00+08:00" pubdate data-updated="true">10/13/2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/hadoop/'>hadoop</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://notcode.github.io/blog/2013/10/13/write-into-database-in-mapreduce-job/" data-via="" data-counturl="http://notcode.github.io/blog/2013/10/13/write-into-database-in-mapreduce-job/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/09/07/replica-strategy-in-hdfs-is-not-good/" title="Previous Post: Replica strategy in hdfs is not good enough">&laquo; Replica strategy in hdfs is not good enough</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/10/13/refactor-datebase-design/" title="Next Post: refactor database design">refactor database design &raquo;</a>
+      
+    </p>
+  </footer>
 </article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
 
 </div>
 
@@ -146,7 +239,10 @@
       var disqus_shortname = 'garfee';
       
         
-        var disqus_script = 'count.js';
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://notcode.github.io/blog/2013/10/13/write-into-database-in-mapreduce-job/';
+        var disqus_url = 'http://notcode.github.io/blog/2013/10/13/write-into-database-in-mapreduce-job/';
+        var disqus_script = 'embed.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;

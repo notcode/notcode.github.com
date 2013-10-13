@@ -4,7 +4,7 @@
   <title><![CDATA[Not Code]]></title>
   <link href="http://notcode.github.io/atom.xml" rel="self"/>
   <link href="http://notcode.github.io/"/>
-  <updated>2013-09-07T20:37:07+08:00</updated>
+  <updated>2013-10-13T21:29:17+08:00</updated>
   <id>http://notcode.github.io/</id>
   <author>
     <name><![CDATA[coder]]></name>
@@ -12,6 +12,88 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[refactor database design]]></title>
+    <link href="http://notcode.github.io/blog/2013/10/13/refactor-datebase-design/"/>
+    <updated>2013-10-13T19:40:00+08:00</updated>
+    <id>http://notcode.github.io/blog/2013/10/13/refactor-datebase-design</id>
+    <content type="html"><![CDATA[<h4>原来的设计</h4>
+
+<p>最近被临时调入一个项目，任务是重写后台计算程序, 所以要保持现有的接口和数据库设计。
+原有的数据库被设计成每个task一张表，表名为<code>&lt;prefix&gt;_&lt;taskid&gt;</code>，简单说明一下:</p>
+
+<blockquote><ul>
+<li>prefix 用于区别报表类型，每个task有10多种报表类型</li>
+<li>taskid 整数，用于标识task
+每个task有一个开始日期和结束日期，在这个日期区间内，每天计算一次该task的报表。
+每个table都有date列, 表明该行记录是哪一天的计算结果</li>
+</ul>
+</blockquote>
+
+<!-- more -->
+
+
+<h4>新的设计</h4>
+
+<p>后台重构后，需要将修改数据库结构，表名为<code>&lt;prefix&gt;_&lt;date&gt;</code>，表内有个taskid指明该条记录属于哪个task.
+而为了不影响前端访问数据库展示报表，希望不要修改表结构。</p>
+
+<h4>解决方案</h4>
+
+<ul>
+<li>预先创建一组名为<code>&lt;prefix&gt;</code>的表,每天的<code>&lt;prefix&gt;_&lt;date&gt;</code>继承自<code>&lt;prefix&gt;</code>.</li>
+<li>为了不影响前端，每个task创建一个view:
+
+<blockquote><p>create view &lt;prefix&gt;&lt;taskid&gt; as select * from &lt;prefix&gt; where taskid=&lt;taskid&gt;</p></blockquote></li>
+</ul>
+
+
+<p>前端都没有察觉到后台数据库结构变了，后台程序有可以按照希望的方式建表。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Be careful with mapreduce while writing into database]]></title>
+    <link href="http://notcode.github.io/blog/2013/10/13/write-into-database-in-mapreduce-job/"/>
+    <updated>2013-10-13T10:04:00+08:00</updated>
+    <id>http://notcode.github.io/blog/2013/10/13/write-into-database-in-mapreduce-job</id>
+    <content type="html"><![CDATA[<h3>A Strange Case</h3>
+
+<p>Recently we come across a problem when writing into database in mapreduce jobs.
+The job gets lots of failure attempt, though succeeds finally.
+We reviewed the source code of job, nothing seemed suspicious, there must be something wrong in our cluster.</p>
+
+<p>So we reproduce the scenario.</p>
+
+<!-- more -->
+
+
+<h3>Crime scene investigate</h3>
+
+<h5>Let&rsquo;s check the log at first.</h5>
+
+<p>From the web console of jobtracker, we find some error logs emitted by the failure attempts.
+The logs tell that inserting operation can&rsquo;t be commited because there is already a row in the table, with same primary key.</p>
+
+<h5>What about the job side?</h5>
+
+<p>The job writing into database is a map-only job, and the written table has a primary key on multiple columns.
+The input data is guaranted unique on the primary key, so there should be no conflits while executing sql like <code>'insert into ...'</code></p>
+
+<p>We notice that all of the failure attempts&rsquo;s id is greater than 0, that remind me a feature called peculative task in hadoop.
+The insert confliction is caused by this feature.</p>
+
+<p>Bingo! We find the killer!</p>
+
+<h3>Close the case</h3>
+
+<p>After close speculative task by <code>job.setMapSpeculativeExecution(false)</code>, the job succeeds silently.</p>
+
+<p>How lucky that the table is created with a primary key!
+Otherwise, we will get multiple occurence of the same record silently.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Replica strategy in hdfs is not good enough]]></title>

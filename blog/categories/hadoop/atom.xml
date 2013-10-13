@@ -4,7 +4,7 @@
   <title><![CDATA[Category: hadoop | Not Code]]></title>
   <link href="http://notcode.github.io/blog/categories/hadoop/atom.xml" rel="self"/>
   <link href="http://notcode.github.io/"/>
-  <updated>2013-09-07T20:37:07+08:00</updated>
+  <updated>2013-10-13T21:29:17+08:00</updated>
   <id>http://notcode.github.io/</id>
   <author>
     <name><![CDATA[coder]]></name>
@@ -12,6 +12,48 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Be careful with mapreduce while writing into database]]></title>
+    <link href="http://notcode.github.io/blog/2013/10/13/write-into-database-in-mapreduce-job/"/>
+    <updated>2013-10-13T10:04:00+08:00</updated>
+    <id>http://notcode.github.io/blog/2013/10/13/write-into-database-in-mapreduce-job</id>
+    <content type="html"><![CDATA[<h3>A Strange Case</h3>
+
+<p>Recently we come across a problem when writing into database in mapreduce jobs.
+The job gets lots of failure attempt, though succeeds finally.
+We reviewed the source code of job, nothing seemed suspicious, there must be something wrong in our cluster.</p>
+
+<p>So we reproduce the scenario.</p>
+
+<!-- more -->
+
+
+<h3>Crime scene investigate</h3>
+
+<h5>Let&rsquo;s check the log at first.</h5>
+
+<p>From the web console of jobtracker, we find some error logs emitted by the failure attempts.
+The logs tell that inserting operation can&rsquo;t be commited because there is already a row in the table, with same primary key.</p>
+
+<h5>What about the job side?</h5>
+
+<p>The job writing into database is a map-only job, and the written table has a primary key on multiple columns.
+The input data is guaranted unique on the primary key, so there should be no conflits while executing sql like <code>'insert into ...'</code></p>
+
+<p>We notice that all of the failure attempts&rsquo;s id is greater than 0, that remind me a feature called peculative task in hadoop.
+The insert confliction is caused by this feature.</p>
+
+<p>Bingo! We find the killer!</p>
+
+<h3>Close the case</h3>
+
+<p>After close speculative task by <code>job.setMapSpeculativeExecution(false)</code>, the job succeeds silently.</p>
+
+<p>How lucky that the table is created with a primary key!
+Otherwise, we will get multiple occurence of the same record silently.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Replica strategy in hdfs is not good enough]]></title>

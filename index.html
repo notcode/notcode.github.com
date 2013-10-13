@@ -9,8 +9,9 @@
   <meta name="author" content="coder">
 
   
-  <meta name="description" content="Two methods of Replica I&rsquo;ve known two methods of replica in distributed storage system.
-One is like hadoop, which distributes the three &hellip;">
+  <meta name="description" content="原来的设计 最近被临时调入一个项目，任务是重写后台计算程序, 所以要保持现有的接口和数据库设计。
+原有的数据库被设计成每个task一张表，表名为&lt;prefix&gt;_&lt;taskid&gt;，简单说明一下: prefix 用于区别报表类型，每个task有10多种报表类型
+taskid &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +65,109 @@ One is like hadoop, which distributes the three &hellip;">
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/10/13/refactor-datebase-design/">Refactor Database Design</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-13T19:40:00+08:00" pubdate data-updated="true">10/13/2013</time>
+        
+         | <a href="/blog/2013/10/13/refactor-datebase-design/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h4>原来的设计</h4>
+
+<p>最近被临时调入一个项目，任务是重写后台计算程序, 所以要保持现有的接口和数据库设计。
+原有的数据库被设计成每个task一张表，表名为<code>&lt;prefix&gt;_&lt;taskid&gt;</code>，简单说明一下:</p>
+
+<blockquote><ul>
+<li>prefix 用于区别报表类型，每个task有10多种报表类型</li>
+<li>taskid 整数，用于标识task
+每个task有一个开始日期和结束日期，在这个日期区间内，每天计算一次该task的报表。
+每个table都有date列, 表明该行记录是哪一天的计算结果</li>
+</ul>
+</blockquote>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/10/13/refactor-datebase-design/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/10/13/write-into-database-in-mapreduce-job/">Be Careful With Mapreduce While Writing Into Database</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-13T10:04:00+08:00" pubdate data-updated="true">10/13/2013</time>
+        
+         | <a href="/blog/2013/10/13/write-into-database-in-mapreduce-job/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>A Strange Case</h3>
+
+<p>Recently we come across a problem when writing into database in mapreduce jobs.
+The job gets lots of failure attempt, though succeeds finally.
+We reviewed the source code of job, nothing seemed suspicious, there must be something wrong in our cluster.</p>
+
+<p>So we reproduce the scenario.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/10/13/write-into-database-in-mapreduce-job/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -284,6 +388,14 @@ The other is like mongodb, which store data into shardings with three nodes in e
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2013/10/13/refactor-datebase-design/">Refactor Database Design</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/10/13/write-into-database-in-mapreduce-job/">Be Careful With Mapreduce While Writing Into Database</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2013/09/07/replica-strategy-in-hdfs-is-not-good/">Replica Strategy in Hdfs Is Not Good Enough</a>
       </li>
     
@@ -293,10 +405,6 @@ The other is like mongodb, which store data into shardings with three nodes in e
     
       <li class="post">
         <a href="/blog/2013/07/20/setup-kvm-environment-on-centos-5-dot-3/">在CentOS 5.3 中搭建kvm虚拟机</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/07/02/modeline-vim-configuration-per-file/">Modeline: Vim Configuration Per File</a>
       </li>
     
   </ul>
