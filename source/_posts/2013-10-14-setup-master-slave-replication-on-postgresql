@@ -1,0 +1,68 @@
+---
+layout: post
+title: "postgresql的master slave replication"
+date: 2013-10-14 13:04
+comments: true
+categories: 
+- postgresql
+---
+
+### 常用的命令
+
+*   pg_ctl init -D DIR
+    初始化数据目录
+*   pg_ctl start -D DIR -l LOGFILE
+    启动pg
+*   pg_ctl stop  -D DIR 
+    停止pg
+
+
+<!-- more -->
+
+### 配置master slave replication
+
+##### 注意
+*   配置过程中需要rsync数据目录到slave，所以slave的数据目录会被覆盖
+
+##### master端
+
+*   修改postgresl.conf配置文件
+    wal_level=hot_standby
+    max_wal_senders=5
+    wal_keep_segments=32
+*   修改pg_hba.conf,增加
+    host replication    USER NET/MASK   trust
+*   重启master   
+*   执行
+    psql -c "select pg_start_backup('level',true)"
+    rsync -ac DATADIR SLAVEHOST:SLAVEDATADIR --exclude postmaster.pid
+    psql -c "select pg_stop_backup()"
+
+##### slave端
+
+*   修改postgresql.conf
+    hot_standby=on
+*   新增recovery.conf配置文件
+    cp PGROOT/share/recovery.conf.sample DATADIR/recovery/conf
+*   修改recovery.conf
+    standby_mode='on'
+    primary_conninfo='host=MASTERIP port=MASTERPORT user=USER'
+*   启动
+
+
+### 验证
+
+#####  方式一
+*   在master上执行
+    psql -c "select pg_current_xlog_location()"
+*   在slave上执行
+    psql -c "select pg_last_xlog_receive_location()"
+    psql -c "select pg_last_xlog_replay_location()"
+
+通过对比可以看到relica的进度
+
+#####  方式二
+*   在master上执行`ps -ef|grep sender`
+*   在slave上执行`ps -ef|grep receiver`
+
+同样，通过对比可以看到relica的进度
