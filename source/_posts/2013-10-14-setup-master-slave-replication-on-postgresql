@@ -22,6 +22,7 @@ categories:
 ### 配置master slave replication
 
 ##### 注意
+
 *   配置过程中需要rsync数据目录到slave，所以slave的数据目录会被覆盖
 
 ##### master端
@@ -53,6 +54,7 @@ categories:
 ### 验证
 
 #####  方式一
+
 *   在master上执行
     psql -c "select pg_current_xlog_location()"
 *   在slave上执行
@@ -62,7 +64,13 @@ categories:
 通过对比可以看到relica的进度
 
 #####  方式二
+
 *   在master上执行`ps -ef|grep sender`
 *   在slave上执行`ps -ef|grep receiver`
 
 同样，通过对比可以看到relica的进度
+
+
+#### 参考
+
+http://wiki.postgresql.org/wiki/Streaming_Replication
