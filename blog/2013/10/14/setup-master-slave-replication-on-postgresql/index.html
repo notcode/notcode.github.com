@@ -5,12 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>mongodb performance tuning - Not Code</title>
+  <title>setup master slave replication on postgresql - Not Code</title>
   <meta name="author" content="coder">
 
   
-  <meta name="description" content="1.背景 mongodb的写性能很一般,即使采用bulk insert，也达不到我们的业务需求。
-另外，mongodb有一个DB粒度的读写锁,因此采用并发写也无法提高写性能。因为读写锁的关系，在有写负载较高的情况下,读性能也被拉低了。 引自mongodb官网: Beginning with &hellip;">
+  <meta name="description" content="1. 常用的命令 pg_ctl init -D DIR -o "--no-locale" 初始化数据目录. -o表示要传递给initdb的参数. --no-locale将encoding设置为SQL_ASCII,Collation和Ctype设置为C,可以避免各种编码的问题.
+pg_ctl &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,7 +19,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://notcode.github.io/blog/2013/08/08/mongodb-performance-tuning">
+  <link rel="canonical" href="http://notcode.github.io/blog/2013/10/14/setup-master-slave-replication-on-postgresql">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Not Code" type="application/atom+xml">
@@ -67,7 +67,7 @@
   
   <header>
     
-      <h1 class="entry-title">Mongodb Performance Tuning</h1>
+      <h1 class="entry-title">Setup Master Slave Replication on Postgresql</h1>
     
     
       <p class="meta">
@@ -83,7 +83,7 @@
   
 
 
-<time datetime="2013-08-08T09:47:00+08:00" pubdate data-updated="true">08/08/2013</time>
+<time datetime="2013-10-14T13:04:00+08:00" pubdate data-updated="true">10/14/2013</time>
         
          | <a href="#disqus_thread">Comments</a>
         
@@ -92,93 +92,121 @@
   </header>
 
 
-<div class="entry-content"><h4>1.背景</h4>
+<div class="entry-content"><h4>1. 常用的命令</h4>
 
-<p>mongodb的写性能很一般,即使采用bulk insert，也达不到我们的业务需求。
-另外，mongodb有一个DB粒度的读写锁,因此采用并发写也无法提高写性能。因为读写锁的关系，在有写负载较高的情况下,读性能也被拉低了。</p>
+<ul>
+<li><p><code>pg_ctl init -D DIR -o "--no-locale"</code></p>
 
-<p>引自mongodb官网:</p>
+<p>初始化数据目录. <code>-o</code>表示要传递给initdb的参数. <code>--no-locale</code>将encoding设置为SQL_ASCII,Collation和Ctype设置为C,可以避免各种编码的问题.</p></li>
+<li><p><code>pg_ctl start -D &lt;DATA DIR&gt; -l &lt;LOG FILE&gt;</code></p>
 
-<blockquote><p>Beginning with version 2.2, MongoDB implements locks on a per-database basis for most read and write operations.</p></blockquote>
+<p>启动pg</p></li>
+<li><p><code>pg_ctl stop  -D &lt;DATA DIR&gt;</code></p>
+
+<p>停止pg</p></li>
+<li><p><code>pg_dump &lt;DBNAME&gt; [-t &lt;TBNAME&gt;]...</code></p>
+
+<p>导出数据库/表</p></li>
+</ul>
+
 
 <!-- more -->
 
 
-<h4>2.如何优化</h4>
+<h4>2. 配置master slave replication</h4>
 
-<p>折腾了两天，最终的优化方案如下：</p>
+<h5>注意</h5>
 
 <ul>
-<li>使用replica set，读写分离</li>
+<li>需要先有一个可用的master server。不需要有一个可用的slave server</li>
+<li>配置过程中需要将master的数据目录rsync到slave机器上</li>
+<li>最后在slave机器上启动pg服务</li>
 </ul>
 
 
-<p> replica set可以避免读写竞争，保证mongodb正常的读写性能。而且为了HA，replica set是必须要做的，所以没有测试replica set对性能影响。</p>
+<h5>master端</h5>
+
+<ol>
+<li><p> 修改postgresl.conf配置文件中的如下配置项：</p>
+
+<pre><code>wal_level=hot_standby
+
+max_wal_senders=5
+
+wal_keep_segments=32
+</code></pre></li>
+<li><p> 修改pg_hba.conf,增加:</p>
+
+<pre><code>host replication    &lt;USER&gt; &lt;NETWORK/MASK&gt;   trust
+</code></pre></li>
+<li><p> 重启master</p></li>
+<li><p> 执行</p>
+
+<pre><code>psql -c "select pg_start_backup('level',true)"
+
+rsync -ac DATADIR SLAVEHOST:SLAVEDATADIR --exclude postmaster.pid
+
+psql -c "select pg_stop_backup()"
+</code></pre></li>
+</ol>
+
+
+<h5>slave端</h5>
+
+<ol>
+<li><p>修改postgresql.conf</p>
+
+<pre><code>hot_standby=on
+</code></pre></li>
+<li><p>新增recovery.conf配置文件</p>
+
+<pre><code>cp &lt;PGROOT&gt;/share/recovery.conf.sample &lt;DATADIR&gt;/recovery.conf
+</code></pre></li>
+<li><p>修改recovery.conf</p>
+
+<pre><code>standby_mode='on'
+
+primary_conninfo='host=&lt;HOST of MASTER&gt; port=&lt;PORT of MASTER&gt; user=&lt;USER&gt;'
+</code></pre></li>
+<li><p>启动</p></li>
+</ol>
+
+
+<h4>3. 验证</h4>
+
+<h5>方式一</h5>
 
 <ul>
-<li>对collection做shard，提高写性能</li>
+<li><p>在master上执行</p>
+
+<pre><code>psql -c "select pg_current_xlog_location()"
+</code></pre></li>
+<li><p>在slave上执行</p>
+
+<pre><code>psql -c "select pg_last_xlog_receive_location()"
+
+psql -c "select pg_last_xlog_replay_location()"
+</code></pre></li>
 </ul>
 
 
-<p>做shard能近似线性的提高写速度，在做线性扩展时，可以通过增加shard来达到预期。
-但要如果想将写速度提高1~2个数量级，shard数量要x10或x100，代价太高。</p>
+<p>通过对比可以看到replicate的进度</p>
+
+<h5>方式二</h5>
 
 <ul>
-<li>合并document,减少insert次数</li>
+<li>在master上执行<code>ps -ef|grep sender</code></li>
+<li>在slave上执行<code>ps -ef|grep receiver</code></li>
 </ul>
 
 
-<p>终极大招还是这条策略。将原来的document10个一组,合并成一个document，insert的次数降了一个数量级，写速度便不再是问题。</p>
+<p>同样，通过对比可以看到replicate的进度</p>
 
-<h4>3.shard benchmark</h4>
+<h4>4. 参考</h4>
 
-<p>对shard做了比较简单的测试，只是验证一下shard的效果。结果如下：</p>
-
-<p>写进程并发数:8</p>
-
-<ul>
-<li><p>没有shard,7000 inserts/sec</p></li>
-<li><p>2个shard,12000 inserts/sec</p></li>
-<li><p>4个shard,16000 inserts/sec</p></li>
-</ul>
-
-
-<p>测试过程中，mongodb的写速度不是很稳定。</p>
-
-<p><em>测试代码:</em></p>
-
-<pre><code>var mongo=require('mongodb');
-var util=require('util');
-var fs=require('fs');
-var STEP=require('./step');
-
-var collection;
-function loop(){
-    var d=new Date();
-    var s=100000;
-    STEP(   
-        function(){
-            var group=this.group();
-            for(var i=0;i&lt;s;i++){
-                collection.insert({k:i},group());
-            }
-        },
-        function(err,res){
-            if(err){throw err;}
-            console.log('TPS:\t'+s*1000.0/(new Date()-d))
-            setTimeout(loop,10);
-        }
-    );  
-}   
-mongo.connect('mongodb://mongo.test.clouds.com:27017/x?w=1',function(err,db){
-    if(err){throw err;}
-    db.collection('a',function(err,c){
-        if(err){throw err;}
-        collection=c;
-        loop();
-    });
-});
-</code></pre>
+<p><a href="http://www.postgresql.org/docs/9.1/static/app-initdb.html">http://www.postgresql.org/docs/9.1/static/app-initdb.html</a>
+<a href="http://www.postgresql.org/docs/9.1/static/multibyte.html#MULTIBYTE-CHARSET-SUPPORTED">http://www.postgresql.org/docs/9.1/static/multibyte.html#MULTIBYTE-CHARSET-SUPPORTED</a>
+<a href="http://wiki.postgresql.org/wiki/Streaming_Replication">http://wiki.postgresql.org/wiki/Streaming_Replication</a></p>
 </div>
 
 
@@ -201,12 +229,12 @@ mongo.connect('mongodb://mongo.test.clouds.com:27017/x?w=1',function(err,db){
   
 
 
-<time datetime="2013-08-08T09:47:00+08:00" pubdate data-updated="true">08/08/2013</time>
+<time datetime="2013-10-14T13:04:00+08:00" pubdate data-updated="true">10/14/2013</time>
       
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/mongodb/'>mongodb</a>
+    <a class='category' href='/blog/categories/postgresql/'>postgresql</a>
   
 </span>
 
@@ -215,7 +243,7 @@ mongo.connect('mongodb://mongo.test.clouds.com:27017/x?w=1',function(err,db){
     
       <div class="sharing">
   
-  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://notcode.github.io/blog/2013/08/08/mongodb-performance-tuning/" data-via="" data-counturl="http://notcode.github.io/blog/2013/08/08/mongodb-performance-tuning/" >Tweet</a>
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://notcode.github.io/blog/2013/10/14/setup-master-slave-replication-on-postgresql/" data-via="" data-counturl="http://notcode.github.io/blog/2013/10/14/setup-master-slave-replication-on-postgresql/" >Tweet</a>
   
   
   
@@ -224,10 +252,8 @@ mongo.connect('mongodb://mongo.test.clouds.com:27017/x?w=1',function(err,db){
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2013/07/20/setup-kvm-environment-on-centos-5-dot-3/" title="Previous Post: 在CentOS 5.3 中搭建kvm虚拟机">&laquo; 在CentOS 5.3 中搭建kvm虚拟机</a>
+        <a class="basic-alignment left" href="/blog/2013/10/13/refactor-datebase-design/" title="Previous Post: refactor database design">&laquo; refactor database design</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2013/09/07/replica-strategy-in-hdfs-is-not-good/" title="Next Post: Replica strategy in hdfs is not good enough">Replica strategy in hdfs is not good enough &raquo;</a>
       
     </p>
   </footer>
@@ -293,8 +319,8 @@ mongo.connect('mongodb://mongo.test.clouds.com:27017/x?w=1',function(err,db){
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://notcode.github.io/blog/2013/08/08/mongodb-performance-tuning/';
-        var disqus_url = 'http://notcode.github.io/blog/2013/08/08/mongodb-performance-tuning/';
+        var disqus_identifier = 'http://notcode.github.io/blog/2013/10/14/setup-master-slave-replication-on-postgresql/';
+        var disqus_url = 'http://notcode.github.io/blog/2013/10/14/setup-master-slave-replication-on-postgresql/';
         var disqus_script = 'embed.js';
       
     (function () {

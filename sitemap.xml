@@ -27,15 +27,21 @@
         <lastmod>2013-10-13T21:26:10+08:00</lastmod>
     </url>
     <url>
+        <loc>
+            http://notcode.github.io/blog/2013/10/14/setup-master-slave-replication-on-postgresql/
+        </loc>
+        <lastmod>2013-10-14T21:48:26+08:00</lastmod>
+    </url>
+    <url>
         <loc>http://notcode.github.io/robots.txt</loc>
         <lastmod>2013-07-02T23:20:19+08:00</lastmod>
     </url>
     <url>
         <loc>http://notcode.github.io/</loc>
-        <lastmod>2013-10-13T21:26:10+08:00</lastmod>
+        <lastmod>2013-10-14T21:48:26+08:00</lastmod>
     </url>
     <url>
         <loc>http://notcode.github.io/blog/archives/</loc>
-        <lastmod>2013-10-13T21:26:10+08:00</lastmod>
+        <lastmod>2013-10-14T21:48:26+08:00</lastmod>
     </url>
 </urlset>

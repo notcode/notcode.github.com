@@ -9,9 +9,8 @@
   <meta name="author" content="coder">
 
   
-  <meta name="description" content="原来的设计 最近被临时调入一个项目，任务是重写后台计算程序, 所以要保持现有的接口和数据库设计。
-原有的数据库被设计成每个task一张表，表名为&lt;prefix&gt;_&lt;taskid&gt;，简单说明一下: prefix 用于区别报表类型，每个task有10多种报表类型
-taskid &hellip;">
+  <meta name="description" content="1. 常用的命令 pg_ctl init -D DIR -o "--no-locale" 初始化数据目录. -o表示要传递给initdb的参数. --no-locale将encoding设置为SQL_ASCII,Collation和Ctype设置为C,可以避免各种编码的问题.
+pg_ctl &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +64,65 @@ taskid &hellip;">
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/10/14/setup-master-slave-replication-on-postgresql/">Setup Master Slave Replication on Postgresql</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-14T13:04:00+08:00" pubdate data-updated="true">10/14/2013</time>
+        
+         | <a href="/blog/2013/10/14/setup-master-slave-replication-on-postgresql/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h4>1. 常用的命令</h4>
+
+<ul>
+<li><p><code>pg_ctl init -D DIR -o "--no-locale"</code></p>
+
+<p>初始化数据目录. <code>-o</code>表示要传递给initdb的参数. <code>--no-locale</code>将encoding设置为SQL_ASCII,Collation和Ctype设置为C,可以避免各种编码的问题.</p></li>
+<li><p><code>pg_ctl start -D &lt;DATA DIR&gt; -l &lt;LOG FILE&gt;</code></p>
+
+<p>启动pg</p></li>
+<li><p><code>pg_ctl stop  -D &lt;DATA DIR&gt;</code></p>
+
+<p>停止pg</p></li>
+<li><p><code>pg_dump &lt;DBNAME&gt; [-t &lt;TBNAME&gt;]...</code></p>
+
+<p>导出数据库/表</p></li>
+</ul>
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/10/14/setup-master-slave-replication-on-postgresql/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -388,6 +446,10 @@ The other is like mongodb, which store data into shardings with three nodes in e
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2013/10/14/setup-master-slave-replication-on-postgresql/">Setup Master Slave Replication on Postgresql</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2013/10/13/refactor-datebase-design/">Refactor Database Design</a>
       </li>
     
@@ -401,10 +463,6 @@ The other is like mongodb, which store data into shardings with three nodes in e
     
       <li class="post">
         <a href="/blog/2013/08/08/mongodb-performance-tuning/">Mongodb Performance Tuning</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/07/20/setup-kvm-environment-on-centos-5-dot-3/">在CentOS 5.3 中搭建kvm虚拟机</a>
       </li>
     
   </ul>

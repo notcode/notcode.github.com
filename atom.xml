@@ -4,7 +4,7 @@
   <title><![CDATA[Not Code]]></title>
   <link href="http://notcode.github.io/atom.xml" rel="self"/>
   <link href="http://notcode.github.io/"/>
-  <updated>2013-10-13T21:29:17+08:00</updated>
+  <updated>2013-10-14T21:48:49+08:00</updated>
   <id>http://notcode.github.io/</id>
   <author>
     <name><![CDATA[coder]]></name>
@@ -12,6 +12,129 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[setup master slave replication on postgresql]]></title>
+    <link href="http://notcode.github.io/blog/2013/10/14/setup-master-slave-replication-on-postgresql/"/>
+    <updated>2013-10-14T13:04:00+08:00</updated>
+    <id>http://notcode.github.io/blog/2013/10/14/setup-master-slave-replication-on-postgresql</id>
+    <content type="html"><![CDATA[<h4>1. 常用的命令</h4>
+
+<ul>
+<li><p><code>pg_ctl init -D DIR -o "--no-locale"</code></p>
+
+<p>初始化数据目录. <code>-o</code>表示要传递给initdb的参数. <code>--no-locale</code>将encoding设置为SQL_ASCII,Collation和Ctype设置为C,可以避免各种编码的问题.</p></li>
+<li><p><code>pg_ctl start -D &lt;DATA DIR&gt; -l &lt;LOG FILE&gt;</code></p>
+
+<p>启动pg</p></li>
+<li><p><code>pg_ctl stop  -D &lt;DATA DIR&gt;</code></p>
+
+<p>停止pg</p></li>
+<li><p><code>pg_dump &lt;DBNAME&gt; [-t &lt;TBNAME&gt;]...</code></p>
+
+<p>导出数据库/表</p></li>
+</ul>
+
+
+<!-- more -->
+
+
+<h4>2. 配置master slave replication</h4>
+
+<h5>注意</h5>
+
+<ul>
+<li>需要先有一个可用的master server。不需要有一个可用的slave server</li>
+<li>配置过程中需要将master的数据目录rsync到slave机器上</li>
+<li>最后在slave机器上启动pg服务</li>
+</ul>
+
+
+<h5>master端</h5>
+
+<ol>
+<li><p> 修改postgresl.conf配置文件中的如下配置项：</p>
+
+<pre><code>wal_level=hot_standby
+
+max_wal_senders=5
+
+wal_keep_segments=32
+</code></pre></li>
+<li><p> 修改pg_hba.conf,增加:</p>
+
+<pre><code>host replication    &lt;USER&gt; &lt;NETWORK/MASK&gt;   trust
+</code></pre></li>
+<li><p> 重启master</p></li>
+<li><p> 执行</p>
+
+<pre><code>psql -c "select pg_start_backup('level',true)"
+
+rsync -ac DATADIR SLAVEHOST:SLAVEDATADIR --exclude postmaster.pid
+
+psql -c "select pg_stop_backup()"
+</code></pre></li>
+</ol>
+
+
+<h5>slave端</h5>
+
+<ol>
+<li><p>修改postgresql.conf</p>
+
+<pre><code>hot_standby=on
+</code></pre></li>
+<li><p>新增recovery.conf配置文件</p>
+
+<pre><code>cp &lt;PGROOT&gt;/share/recovery.conf.sample &lt;DATADIR&gt;/recovery.conf
+</code></pre></li>
+<li><p>修改recovery.conf</p>
+
+<pre><code>standby_mode='on'
+
+primary_conninfo='host=&lt;HOST of MASTER&gt; port=&lt;PORT of MASTER&gt; user=&lt;USER&gt;'
+</code></pre></li>
+<li><p>启动</p></li>
+</ol>
+
+
+<h4>3. 验证</h4>
+
+<h5>方式一</h5>
+
+<ul>
+<li><p>在master上执行</p>
+
+<pre><code>psql -c "select pg_current_xlog_location()"
+</code></pre></li>
+<li><p>在slave上执行</p>
+
+<pre><code>psql -c "select pg_last_xlog_receive_location()"
+
+psql -c "select pg_last_xlog_replay_location()"
+</code></pre></li>
+</ul>
+
+
+<p>通过对比可以看到replicate的进度</p>
+
+<h5>方式二</h5>
+
+<ul>
+<li>在master上执行<code>ps -ef|grep sender</code></li>
+<li>在slave上执行<code>ps -ef|grep receiver</code></li>
+</ul>
+
+
+<p>同样，通过对比可以看到replicate的进度</p>
+
+<h4>4. 参考</h4>
+
+<p><a href="http://www.postgresql.org/docs/9.1/static/app-initdb.html">http://www.postgresql.org/docs/9.1/static/app-initdb.html</a>
+<a href="http://www.postgresql.org/docs/9.1/static/multibyte.html#MULTIBYTE-CHARSET-SUPPORTED">http://www.postgresql.org/docs/9.1/static/multibyte.html#MULTIBYTE-CHARSET-SUPPORTED</a>
+<a href="http://wiki.postgresql.org/wiki/Streaming_Replication">http://wiki.postgresql.org/wiki/Streaming_Replication</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[refactor database design]]></title>
